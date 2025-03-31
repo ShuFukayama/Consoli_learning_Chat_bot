@@ -197,61 +197,6 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// APIエンドポイント: 図表生成
-app.post('/api/generate-diagram', async (req, res) => {
-  try {
-    console.log('図表生成APIリクエスト受信:', req.body);
-    
-    const { concept, diagramType } = req.body;
-    
-    if (!concept || !diagramType) {
-      console.error('Invalid request parameters:', { concept, diagramType });
-      return res.status(400).json({
-        error: '無効なリクエストパラメータです。',
-        details: 'conceptとdiagramTypeは必須です。'
-      });
-    }
-    
-    const systemContent = 'あなたは図表生成の専門家です。Mermaid.js形式で図表を生成してください。';
-    const userContent = `連結決算の概念「${concept}」について、${diagramType}図を作成してください。
-    Mermaid.js形式で出力してください。コードのみを返してください。`;
-    
-    console.log('図表生成OpenAI APIリクエスト準備:', {
-      systemContent,
-      userContent,
-      apiKey: process.env.OPENAI_API_KEY ? `${process.env.OPENAI_API_KEY.substring(0, 5)}...` : 'undefined',
-      baseURL: process.env.OPENAI_BASE_URL
-    });
-    
-    try {
-      const response = await callOpenAI(systemContent, userContent);
-      const diagramCode = response.choices[0].message.content.trim();
-      
-      console.log('図表生成OpenAI API応答成功:', {
-        diagramCodeLength: diagramCode.length
-      });
-      
-      res.json({ diagramCode });
-    } catch (apiError) {
-      console.error('OpenAI API Error in diagram generation:', apiError);
-      res.status(500).json({
-        error: 'OpenAI APIでエラーが発生しました。',
-        details: apiError.message,
-        apiInfo: {
-          apiKey: process.env.OPENAI_API_KEY ? `${process.env.OPENAI_API_KEY.substring(0, 5)}...` : 'undefined',
-          baseURL: process.env.OPENAI_BASE_URL,
-          model: process.env.OPENAI_MODEL || 'claude-sonnet'
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error generating diagram:', error);
-    res.status(500).json({
-      error: '図表の生成中にエラーが発生しました。',
-      details: error.message
-    });
-  }
-});
 
 // APIエンドポイント: 動的問題生成
 app.post('/api/generate-problem', async (req, res) => {
@@ -442,7 +387,8 @@ app.get('/api/get-saved-questions', async (req, res) => {
 });
 
 // サーバーの起動
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server is running on port ${port}`);
   console.log(`Access the app at http://localhost:${port}/index.html`);
+  console.log(`同じネットワーク上の他のPCからは http://<このPCのIPアドレス>:${port}/index.html でアクセスできます`);
 });

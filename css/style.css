@@ -296,6 +296,8 @@ main {
     margin: 30px 0;
 }
 
+/* 可視化セクションのスタイルを削除（元の状態に戻す） */
+
 .start-quiz-btn {
     margin-top: 30px;
 }
