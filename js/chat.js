@@ -805,3 +805,78 @@ const VoiceModule = {
             VoiceModule.stopVoiceInput();
         } else {
             VoiceModule.startVoiceInput();
+        }
+    },
+    
+    /**
+     * 音声入力の開始
+     */
+    startVoiceInput() {
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        voiceInputBtn.classList.add('active');
+        
+        // Web Speech APIの初期化
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        chatState.recognition = new SpeechRecognition();
+        chatState.recognition.lang = 'ja-JP';
+        chatState.recognition.continuous = false;
+        chatState.recognition.interimResults = false;
+        
+        // 音声認識の結果を処理
+        chatState.recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('user-input').value = transcript;
+            ChatActions.sendMessage();
+        };
+        
+        // 音声認識の終了時の処理
+        chatState.recognition.onend = () => {
+            this.stopVoiceInput();
+        };
+        
+        // 音声認識の開始
+        chatState.recognition.start();
+    },
+    
+    /**
+     * 音声入力の停止
+     */
+    stopVoiceInput() {
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        voiceInputBtn.classList.remove('active');
+        
+        if (chatState.recognition) {
+            chatState.recognition.stop();
+            chatState.recognition = null;
+        }
+    },
+    
+    /**
+     * AIメッセージの音声読み上げ
+     * @param {string} message - 読み上げるメッセージ
+     */
+    speakAIMessage(message) {
+        if (!chatState.isSpeechEnabled) return;
+        
+        // Web Speech APIのサポートチェック
+        if (!('speechSynthesis' in window)) {
+            console.warn('このブラウザは音声合成をサポートしていません');
+            return;
+        }
+        
+        // 読み上げを停止
+        window.speechSynthesis.cancel();
+        
+        // テキストから HTML タグを削除
+        const plainText = message.replace(/<[^>]*>/g, '');
+        
+        // 音声合成の設定
+        const utterance = new SpeechSynthesisUtterance(plainText);
+        utterance.lang = 'ja-JP';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        // 音声合成の開始
+        window.speechSynthesis.speak(utterance);
+    }
+};
