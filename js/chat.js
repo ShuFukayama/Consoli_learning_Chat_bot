@@ -33,12 +33,6 @@ const ChatUtils = {
         // 改行をHTMLの改行に変換
         let formattedMessage = message.replace(/\n/g, '<br>');
         
-        // Mermaid図表の検出と処理
-        formattedMessage = formattedMessage.replace(
-            /```mermaid\s+([\s\S]*?)\s+```/g,
-            '<div class="mermaid">$1</div>'
-        );
-        
         // URLをリンクに変換
         formattedMessage = formattedMessage.replace(
             /(https?:\/\/[^\s]+)/g,
@@ -137,12 +131,6 @@ const ChatUI = {
         this.setupEventListeners();
         this.displayChatHistory();
         this.addApiModeToggle();
-        this.addDiagramButton();
-        
-        // Mermaid.jsの初期化（もし読み込まれていれば）
-        if (window.mermaid) {
-            window.mermaid.initialize({ startOnLoad: true });
-        }
         
         // スタイルの追加
         this.addStyles();
@@ -206,23 +194,6 @@ const ChatUI = {
     },
     
     /**
-     * 図表生成ボタンの追加
-     */
-    addDiagramButton() {
-        const chatInput = document.querySelector('.chat-input');
-        
-        const diagramBtn = document.createElement('button');
-        diagramBtn.id = 'diagram-btn';
-        diagramBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-        diagramBtn.title = '図表を生成';
-        diagramBtn.className = 'diagram-btn';
-        
-        diagramBtn.addEventListener('click', DiagramModule.showOptions);
-        
-        chatInput.insertBefore(diagramBtn, document.getElementById('send-btn'));
-    },
-    
-    /**
      * チャット履歴の表示
      */
     displayChatHistory() {
@@ -247,11 +218,6 @@ const ChatUI = {
         
         // スクロールを最下部に移動
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Mermaidの初期化
-        if (window.mermaid) {
-            window.mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-        }
     },
     
     /**
@@ -304,13 +270,13 @@ const ChatUI = {
     addStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            .api-mode-toggle, .voice-output-toggle {
+            .api-mode-toggle {
                 display: flex;
                 align-items: center;
                 margin-bottom: 10px;
             }
             
-            .api-mode-toggle label, .voice-output-toggle label {
+            .api-mode-toggle label {
                 margin-right: 10px;
             }
             
@@ -360,55 +326,6 @@ const ChatUI = {
             }
             
             #api-mode-label {
-                margin-left: 10px;
-            }
-            
-            .diagram-btn, .voice-btn {
-                background-color: var(--secondary-color, #2ecc71);
-                color: white;
-                padding: 15px;
-                border-radius: var(--border-radius, 8px);
-                margin-right: 5px;
-                border: none;
-                cursor: pointer;
-            }
-            
-            .voice-btn {
-                background-color: var(--accent-color, #f39c12);
-            }
-            
-            .voice-btn.active {
-                background-color: #e74c3c;
-            }
-            
-            .diagram-modal {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-            }
-            
-            .diagram-modal-content {
-                background-color: white;
-                padding: 20px;
-                border-radius: var(--border-radius, 8px);
-                width: 80%;
-                max-width: 500px;
-            }
-            
-            .diagram-modal-buttons {
-                display: flex;
-                justify-content: flex-end;
-                margin-top: 20px;
-            }
-            
-            .diagram-modal-buttons button {
                 margin-left: 10px;
             }
             
@@ -608,123 +525,3 @@ const ChatActions = {
         }
     }
 };
-
-// 図表モジュール
-const DiagramModule = {
-    /**
-     * 図表オプションの表示
-     */
-    showOptions() {
-        // Mermaid.jsが読み込まれているか確認
-        if (!window.mermaid) {
-            // Mermaid.jsを動的に読み込む
-            DiagramModule.loadMermaidJS(() => DiagramModule.showModal());
-        } else {
-            DiagramModule.showModal();
-        }
-    },
-    
-    /**
-     * Mermaid.jsの読み込み
-     * @param {Function} callback - 読み込み完了後のコールバック
-     */
-    loadMermaidJS(callback) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js';
-        script.onload = () => {
-            window.mermaid.initialize({ startOnLoad: true });
-            callback();
-        };
-        document.head.appendChild(script);
-    },
-    
-    /**
-     * 図表モーダルの表示
-     */
-    showModal() {
-        const modal = document.createElement('div');
-        modal.className = 'diagram-modal';
-        
-        // カリキュラムデータから概念を取得
-        const conceptOptions = ChatUtils.getConceptOptions();
-        
-        modal.innerHTML = `
-            <div class="diagram-modal-content">
-                <h3>図表の生成</h3>
-                <p>説明してほしい概念を選択してください：</p>
-                <select id="concept-select">
-                    ${conceptOptions}
-                </select>
-                <p>図表の種類：</p>
-                <select id="diagram-type">
-                    <option value="フローチャート">フローチャート</option>
-                    <option value="関係図">関係図</option>
-                    <option value="プロセス">プロセス図</option>
-                </select>
-                <div class="diagram-modal-buttons">
-                    <button id="cancel-diagram" class="secondary-btn">キャンセル</button>
-                    <button id="generate-diagram" class="primary-btn">生成</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // ボタンのイベントリスナー
-        document.getElementById('cancel-diagram').addEventListener('click', () => {
-            modal.remove();
-        });
-        
-        document.getElementById('generate-diagram').addEventListener('click', async () => {
-            const concept = document.getElementById('concept-select').value;
-            const diagramType = document.getElementById('diagram-type').value;
-            modal.remove();
-            
-            // 図表生成リクエスト
-            await DiagramModule.generateAndDisplay(concept, diagramType);
-        });
-    },
-    
-    /**
-     * 図表の生成と表示
-     * @param {string} concept - 概念
-     * @param {string} diagramType - 図表の種類
-     */
-    async generateAndDisplay(concept, diagramType) {
-        // 「生成中...」の表示
-        ChatActions.addUserMessage(`「${concept}」の${diagramType}を生成してください`);
-        ChatUI.showTypingIndicator();
-        
-        try {
-            console.log('図表生成APIリクエスト送信開始...');
-            console.log('リクエスト内容:', { concept, diagramType });
-            
-            const response = await fetch('/api/generate-diagram', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ concept, diagramType })
-            });
-            
-            console.log('図表生成APIレスポンス受信:', response.status, response.statusText);
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(e => ({ error: 'JSONの解析に失敗しました' }));
-                throw new Error(`API Error (${response.status}): ${errorData.error || response.statusText}`);
-            }
-            
-            const data = await response.json();
-            console.log('図表生成APIレスポンスデータ:', data);
-            ChatUI.removeTypingIndicator();
-            
-            // 図表を含むメッセージを追加
-            ChatActions.addAIMessage(`「${concept}」の${diagramType}です：\n\n\`\`\`mermaid\n${data.diagramCode}\n\`\`\``);
-        } catch (error) {
-            console.error('図表生成中のエラー:', error);
-            ChatUI.removeTypingIndicator();
-            ChatActions.addAIMessage(`申し訳ありません。図表の生成中にエラーが発生しました。\n\nエラー詳細: ${error.message}`);
-        }
-    }
-};
-
