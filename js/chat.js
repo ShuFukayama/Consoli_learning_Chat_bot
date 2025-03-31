@@ -12,8 +12,6 @@ const chatState = {
         }
     ],
     isProcessing: false,
-    isSpeechEnabled: false,
-    recognition: null,
     typingInterval: null
 };
 
@@ -140,7 +138,6 @@ const ChatUI = {
         this.displayChatHistory();
         this.addApiModeToggle();
         this.addDiagramButton();
-        VoiceModule.initialize();
         
         // Mermaid.jsの初期化（もし読み込まれていれば）
         if (window.mermaid) {
@@ -474,9 +471,6 @@ const ChatActions = {
         
         // チャット履歴を更新
         ChatUI.displayChatHistory();
-        
-        // 音声読み上げ
-        VoiceModule.speakAIMessage(message);
     },
     
     /**
@@ -734,149 +728,3 @@ const DiagramModule = {
     }
 };
 
-// 音声モジュール
-const VoiceModule = {
-    /**
-     * 音声インターフェースの初期化
-     */
-    initialize() {
-        // Web Speech APIのサポートチェック
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            console.warn('このブラウザは音声認識をサポートしていません');
-            return;
-        }
-        
-        // 音声インターフェースUIの追加
-        this.addInterfaceUI();
-    },
-    
-    /**
-     * 音声インターフェースUIの追加
-     */
-    addInterfaceUI() {
-        const chatInput = document.querySelector('.chat-input');
-        
-        // 音声入力ボタン
-        const voiceInputBtn = document.createElement('button');
-        voiceInputBtn.id = 'voice-input-btn';
-        voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        voiceInputBtn.title = '音声で質問';
-        voiceInputBtn.className = 'voice-btn';
-        
-        voiceInputBtn.addEventListener('click', this.toggleVoiceInput);
-        
-        // 音声出力トグル
-        const voiceOutputToggle = document.createElement('div');
-        voiceOutputToggle.className = 'voice-output-toggle';
-        voiceOutputToggle.innerHTML = `
-            <label for="voice-output-checkbox">音声出力:</label>
-            <label class="switch">
-                <input type="checkbox" id="voice-output-checkbox">
-                <span class="slider"></span>
-            </label>
-        `;
-        
-        // UIの追加
-        chatInput.insertBefore(voiceInputBtn, document.getElementById('send-btn'));
-        
-        const chatContainer = document.querySelector('.chat-container');
-        chatContainer.parentNode.insertBefore(voiceOutputToggle, chatContainer);
-        
-        // 音声出力トグルのイベントリスナー
-        const voiceOutputCheckbox = document.getElementById('voice-output-checkbox');
-        voiceOutputCheckbox.addEventListener('change', function() {
-            chatState.isSpeechEnabled = this.checked;
-            const slider = document.querySelector('.voice-output-toggle .slider');
-            if (this.checked) {
-                slider.classList.add('active');
-            } else {
-                slider.classList.remove('active');
-            }
-        });
-    },
-    
-    /**
-     * 音声入力の切り替え
-     */
-    toggleVoiceInput() {
-        const voiceInputBtn = document.getElementById('voice-input-btn');
-        
-        if (voiceInputBtn.classList.contains('active')) {
-            VoiceModule.stopVoiceInput();
-        } else {
-            VoiceModule.startVoiceInput();
-        }
-    },
-    
-    /**
-     * 音声入力の開始
-     */
-    startVoiceInput() {
-        const voiceInputBtn = document.getElementById('voice-input-btn');
-        voiceInputBtn.classList.add('active');
-        
-        // Web Speech APIの初期化
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        chatState.recognition = new SpeechRecognition();
-        chatState.recognition.lang = 'ja-JP';
-        chatState.recognition.continuous = false;
-        chatState.recognition.interimResults = false;
-        
-        // 音声認識の結果を処理
-        chatState.recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            document.getElementById('user-input').value = transcript;
-            ChatActions.sendMessage();
-        };
-        
-        // 音声認識の終了時の処理
-        chatState.recognition.onend = () => {
-            this.stopVoiceInput();
-        };
-        
-        // 音声認識の開始
-        chatState.recognition.start();
-    },
-    
-    /**
-     * 音声入力の停止
-     */
-    stopVoiceInput() {
-        const voiceInputBtn = document.getElementById('voice-input-btn');
-        voiceInputBtn.classList.remove('active');
-        
-        if (chatState.recognition) {
-            chatState.recognition.stop();
-            chatState.recognition = null;
-        }
-    },
-    
-    /**
-     * AIメッセージの音声読み上げ
-     * @param {string} message - 読み上げるメッセージ
-     */
-    speakAIMessage(message) {
-        if (!chatState.isSpeechEnabled) return;
-        
-        // Web Speech APIのサポートチェック
-        if (!('speechSynthesis' in window)) {
-            console.warn('このブラウザは音声合成をサポートしていません');
-            return;
-        }
-        
-        // 読み上げを停止
-        window.speechSynthesis.cancel();
-        
-        // テキストから HTML タグを削除
-        const plainText = message.replace(/<[^>]*>/g, '');
-        
-        // 音声合成の設定
-        const utterance = new SpeechSynthesisUtterance(plainText);
-        utterance.lang = 'ja-JP';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        
-        // 音声合成の開始
-        window.speechSynthesis.speak(utterance);
-    }
-};
