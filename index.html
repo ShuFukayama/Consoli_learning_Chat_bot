@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>連結決算学習アプリ</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>連結決算マスター</h1>
+            <div class="user-progress">
+                <div class="progress-info">
+                    <span id="user-level">レベル 1</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="badges" id="badges-container">
+                    <!-- バッジはJSで動的に追加 -->
+                </div>
+            </div>
+        </header>
+
+        <nav>
+            <button id="home-btn" class="nav-btn active"><i class="fas fa-home"></i> ホーム</button>
+            <button id="curriculum-btn" class="nav-btn"><i class="fas fa-book"></i> カリキュラム</button>
+            <button id="progress-btn" class="nav-btn"><i class="fas fa-chart-line"></i> 学習進捗</button>
+            <button id="chat-btn" class="nav-btn"><i class="fas fa-comments"></i> AIチャット</button>
+        </nav>
+
+        <main>
+            <!-- ホーム画面 -->
+            <section id="home-section" class="active-section">
+                <h2>連結決算を体系的に学ぼう</h2>
+                <div class="welcome-message">
+                    <p>このアプリでは、連結決算の基礎から応用まで段階的に学習できます。</p>
+                    <p>各章では、概念解説、演習問題、詳細な解説を通じて理解を深めることができます。</p>
+                    <p>また、AIチャット機能を使って、疑問点をいつでも質問できます。</p>
+                </div>
+                <div class="quick-start">
+                    <h3>クイックスタート</h3>
+                    <button id="start-learning-btn" class="primary-btn">学習を始める</button>
+                    <button id="continue-learning-btn" class="secondary-btn">前回の続きから</button>
+                </div>
+                <div class="features">
+                    <div class="feature-card">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h4>体系的カリキュラム</h4>
+                        <p>基礎から応用まで段階的に学べる</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-tasks"></i>
+                        <h4>実践的な演習</h4>
+                        <p>理解度を確認する問題と解説</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-robot"></i>
+                        <h4>AIサポート</h4>
+                        <p>疑問点をAIに質問できる</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-user-graduate"></i>
+                        <h4>個別最適化</h4>
+                        <p>弱点に合わせた学習パス</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- カリキュラム画面 -->
+            <section id="curriculum-section" class="section">
+                <h2>学習カリキュラム</h2>
+                <div class="chapters-container" id="chapters-container">
+                    <!-- 章のリストはJSで動的に生成 -->
+                </div>
+            </section>
+
+            <!-- 章の詳細画面 -->
+            <section id="chapter-detail-section" class="section">
+                <div class="chapter-navigation">
+                    <button id="back-to-curriculum" class="back-btn"><i class="fas fa-arrow-left"></i> カリキュラムに戻る</button>
+                </div>
+                <div id="chapter-content">
+                    <!-- 章の内容はJSで動的に生成 -->
+                </div>
+            </section>
+
+            <!-- クイズ画面 -->
+            <section id="quiz-section" class="section">
+                <div class="quiz-navigation">
+                    <button id="back-to-chapter" class="back-btn"><i class="fas fa-arrow-left"></i> 章に戻る</button>
+                </div>
+                <div id="quiz-container">
+                    <h3 id="quiz-title">問題</h3>
+                    <div id="quiz-question"></div>
+                    <div id="quiz-options"></div>
+                    <div id="quiz-feedback" class="hidden"></div>
+                    <button id="quiz-next-btn" class="primary-btn">次へ</button>
+                </div>
+            </section>
+
+            <!-- 進捗画面 -->
+            <section id="progress-section" class="section">
+                <h2>学習進捗</h2>
+                <div class="progress-summary">
+                    <div class="progress-stat">
+                        <h4>完了した章</h4>
+                        <p id="completed-chapters">0/10</p>
+                    </div>
+                    <div class="progress-stat">
+                        <h4>正解率</h4>
+                        <p id="correct-rate">0%</p>
+                    </div>
+                    <div class="progress-stat">
+                        <h4>学習時間</h4>
+                        <p id="study-time">0時間</p>
+                    </div>
+                </div>
+                <div class="progress-details">
+                    <h3>章ごとの進捗</h3>
+                    <div id="chapter-progress-container">
+                        <!-- 章ごとの進捗はJSで動的に生成 -->
+                    </div>
+                </div>
+                <div class="weak-points">
+                    <h3>弱点分析</h3>
+                    <div id="weak-points-container">
+                        <!-- 弱点分析はJSで動的に生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- AIチャット画面 -->
+            <section id="chat-section" class="section">
+                <h2>AIアシスタント</h2>
+                <div class="chat-container">
+                    <div id="chat-messages">
+                        <div class="message ai-message">
+                            <div class="message-content">
+                                <p>こんにちは！連結決算について質問があればお気軽にどうぞ。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="user-input" placeholder="質問を入力してください...">
+                        <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 連結決算マスター</p>
+        </footer>
+    </div>
+
+    <!-- スクリプト -->
+    <script src="js/app.js"></script>
+    <script src="js/curriculum.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
